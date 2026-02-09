@@ -228,9 +228,111 @@ const permute = (arr) => {
     }
     backtrack([]);
     return result;
-}   
+}
 
 // this function should return 2D matrix of 6 different permutations of this argh arr:
 console.log(permute([1, 2, 3]));
 
-// TODO do the combinations, Controlled depth (k - length) subset generation.
+// NOTE new material:
+//! Return all k-length combinations from the set {1,2..., n} (order does not matter):
+// Pruning: if path.length + (n - start + 1) < k, there are not enough numbers left to fill to k, return early.
+// A) combine(n, k): choose k from 1..n (with pruning)
+const combine = (n, k) => {
+    const result = [];
+    const path = [];
+
+    function backtrack(start) {
+        // prune: not enough numbers left to fill to k:
+        if (path.length + (n - start + 1) < k) return;
+
+        if (path.length === k) {
+            result.push([...path]);
+            return;
+        }
+
+        for (let i = start; i <= n; i++) {
+            path.push(i);
+            backtrack(i + 1);
+            path.pop();
+        }
+    }
+    // invoke the function of the backtracK:
+    backtrack(1);
+    return result;
+}
+
+console.log("combine(4, 2):", combine(4, 2)); //expected return: [[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]
+
+// B) combinations(arr, k): choose k from an arbitrary array of unique items
+const combinations = (arr, k) => {
+    const result = [];
+    const path = [];
+
+    function backtrack(start) {
+        if (path.length === k) {
+            result.push([...path]);
+            return;
+        }
+        for (let i = start; i < arr.length; i++) {
+            path.push(arr[i]);
+            backtrack(i + 1);
+            path.pop();
+        }
+    }
+    backtrack(0);
+    return result;
+}
+
+console.log("combinations(['a','b','c','d'], 3):", combinations(['a', 'b', 'c', 'd'], 3));
+
+// C) combinationsNoDup(arr, k): input may contain duplicates; avoid duplicate results
+const combinationsNoDup = (arr, k) => {
+    // sort to group duplicates together:
+    const a = [...arr].sort((x, y) => (x < y ? -1 : x > y ? 1 : 0));
+    const result = [];
+    const path = [];
+
+    function backtrack(start) {
+        if (path.length === k) {
+            result.push([...path]);
+            return;
+        }
+        for (let i = start; i < a.length; i++) {
+            // skip duplicates at some recursion depth:
+            if (i > start && a[i] === a[i - 1]) continue;
+            path.push(a[i]);
+            backtrack(i + 1);
+            path.pop();
+        }
+    }
+    backtrack(0);
+    return result;
+}
+
+console.log("combinationsNoDup([1,1,2,2,3], 2):", combinationsNoDup([1, 1, 2, 2, 3], 2));
+
+// D) combineIterative(n, k): iterative lexicographic generation (no recursion)
+const combineIterative = (n, k) => {
+    if (k === 0) return [[]];
+    if (k > n) return [];
+
+    const result = [];
+    const c = Array.from({ length: k }, (_, i) => i + 1);
+
+    while (true) {
+        result.push([...c]);
+
+        // find the rightmost element that can be increamented:
+        let i = k - 1;
+        while (i >= 0 && c[i] === n - (k - 1 - i)) i--;
+        if (i < 0) break; // all combos are done:
+
+        c[i]++;
+        for (let j = i + 1; j < k; j++) {
+            c[j] = c[j - 1] + 1; // resets suffixes:
+        }
+    }
+    return result;
+}
+
+console.log("combineIterative(5, 3):", combineIterative(5, 3));

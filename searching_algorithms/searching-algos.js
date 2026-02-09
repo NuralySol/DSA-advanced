@@ -165,4 +165,57 @@ console.log('BFS per component:', comps);
  *    even when BFS restarts for multiple components.
  */
 
-// TODO finish the DFS algorithm on connected graph and on disconnected graph as well.
+//! DFS - Depth-First-Search, explores a graph (or a tree) by going deep as possible along each branch before backtracking. It's the recursive or stack based analog to Breadth-First Search (BFS) which uses a queue.
+
+// graph represented in form of an Adjacency List:
+const graph = {
+    A: ['B', 'C'],
+    B: ['D', 'E'],
+    C: ['F'],
+    D: [],
+    E: ['F'],
+    F: []
+};
+
+//* this is a recursive function in which function calls itself:
+const dfsRecursive = (node, graph, visited = new Set(), result = []) => {
+    if (visited.has(node)) return;
+    visited.add(node);
+    result.push(node);
+
+    for (const neighbor of graph[node]) {
+        dfsRecursive(neighbor, graph, visited, result);
+    }
+    // return the result array holder:
+    return result;
+}
+
+console.log(dfsRecursive('A', graph));
+console.log(dfsRecursive('E', graph)); 
+
+//* this is an iterative function which uses a stack:
+const dfsIterative = (start, graph) => {
+    const visited = new Set();
+    const stack = [start]; // LIFO: last-in-first-out!
+    const result = [];
+
+    while (stack.length > 0) {
+        const node = stack.pop(); // take the top element:
+        if (!visited.has(node)) {
+            visited.add(node);
+            result.push(node); // process node (collect it):
+
+            // push neighbors in reverse order to mimic recursive DFS:
+            const neighbors = graph[node];
+            for (let i = neighbors.length - 1; i >= 0; i--) {
+                stack.push(neighbors[i]);
+            }
+        }
+    }
+    return result;
+}
+
+// demo check of the dfsIterative traversals:
+console.log(dfsIterative('A', graph));
+console.log(dfsIterative('E', graph));
+console.log(dfsIterative('B', graph));
